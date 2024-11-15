@@ -4,17 +4,33 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>競馬資金配分ツール（18頭対応）</title>
+    <link href="https://fonts.googleapis.com/css2?family=M+PLUS+1p:wght@400&display=swap" rel="stylesheet">
     <style>
+        body {
+            font-family: 'M PLUS 1p', sans-serif;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
         .input-group {
+            display: flex;
+            align-items: center;
             margin-bottom: 10px;
+            flex-wrap: nowrap;
         }
         .odds-input {
             width: 8ch;
+            margin-left: 10px;
         }
         .result-text {
-            display: inline-block;
             margin-left: 10px;
-            min-width: 160px;
+            min-width: 180px;
+            white-space: nowrap;
+        }
+        #totalAmount, button {
+            font-size: 1em;
+            padding: 5px;
+            margin-top: 10px;
         }
     </style>
 </head>
@@ -86,8 +102,11 @@
 
             let totalOddsSum = oddsList.reduce((sum, entry) => sum + (1 / entry.odds), 0);
 
+            // 資金配分を計算して、各馬の払戻し金額が総資金よりも多くなるように調整
             oddsList.forEach(entry => {
-                const betAmount = Math.max(100, Math.floor((totalAmount / totalOddsSum) * (1 / entry.odds) / 100) * 100); // 100円単位
+                // 払戻し金額が総資金を上回るようにするために、余裕を持って設定
+                const targetPayout = totalAmount * 1.1; // 払戻しが総資金の110%以上
+                const betAmount = Math.max(100, Math.ceil((targetPayout / entry.odds) / 100) * 100); // 100円単位
                 const payoutAmount = betAmount * entry.odds;
 
                 const resultSpan = document.getElementById(`result${entry.horse}`);
