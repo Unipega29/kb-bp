@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>競馬資金配分ツール（18頭対応）</title>
+    <title>Инструменты для распределения средств</title>
     <link href="https://fonts.googleapis.com/css2?family=M+PLUS+1p:wght@400&display=swap" rel="stylesheet">
     <style>
         body {
@@ -35,20 +35,20 @@
     </style>
 </head>
 <body>
-    <h1>競馬資金配分ツール（最大18頭）</h1>
-    <p>各馬のオッズと総資金を入力して、賭け金額と払戻し金額を表示します。</p>
+    <h1>Инструменты для распределения средств</h1>
+    <p> </p>
 
-    <label for="totalAmount">総資金:</label>
+    <label for="totalAmount">общие средства:</label>
     <input type="number" id="totalAmount" required>
-    <button onclick="calculateBetting()">計算</button>
+    <button onclick="calculateBetting()">Рассчитать</button>
     <br><br>
 
     <div id="oddsContainer">
-        <!-- 各馬のオッズ入力欄を生成 -->
+        <!-- 入力欄を生成 -->
     </div>
 
     <script>
-        // 最大18頭分のオッズ入力欄を生成
+        // 最大18入力欄を生成
         const maxHorses = 18;
         const oddsContainer = document.getElementById('oddsContainer');
 
@@ -57,7 +57,7 @@
             div.classList.add('input-group');
 
             const label = document.createElement('label');
-            label.textContent = `馬${i}のオッズ: `;
+            label.textContent = ` ${i} : `;
             
             const input = document.createElement('input');
             input.type = 'number';
@@ -65,12 +65,12 @@
             input.required = true;
             input.classList.add('odds-input');
             input.id = `odds${i}`;
-            input.oninput = calculateBetting; // オッズ入力時に動的に更新
+            input.oninput = calculateBetting; // 入力時に動的に更新
 
             const resultSpan = document.createElement('span');
             resultSpan.classList.add('result-text');
             resultSpan.id = `result${i}`;
-            resultSpan.textContent = "賭け金額: - 円 / 払戻し金額: - 円";
+            resultSpan.textContent = "колья: - йен / возврат: - йен";
 
             div.appendChild(label);
             div.appendChild(input);
@@ -82,7 +82,7 @@
             const totalAmount = parseFloat(document.getElementById("totalAmount").value);
 
             if (isNaN(totalAmount)) {
-                alert("総資金を入力してください。");
+                alert("Введите общие средства");
                 return;
             }
 
@@ -94,15 +94,15 @@
                 }
             }
 
-            // 入力された馬がいない場合
+            // 入力されていない場合
             if (oddsList.length === 0) {
-                alert("最低1頭の馬のオッズを入力してください。");
+                alert("Введите минимум 2");
                 return;
             }
 
             let totalOddsSum = oddsList.reduce((sum, entry) => sum + (1 / entry.odds), 0);
 
-            // 資金配分を計算して、各馬の払戻し金額が総資金よりも多くなるように調整
+            // 資金配分を計算して、払戻し金額が総資金よりも多くなるように調整
             oddsList.forEach(entry => {
                 // 払戻し金額が総資金を上回るようにするために、余裕を持って設定
                 const targetPayout = totalAmount * 1.1; // 払戻しが総資金の110%以上
@@ -110,13 +110,13 @@
                 const payoutAmount = betAmount * entry.odds;
 
                 const resultSpan = document.getElementById(`result${entry.horse}`);
-                resultSpan.textContent = `賭け金額: ${betAmount}円 / 払戻し金額: ${payoutAmount.toFixed(2)}円`;
+                resultSpan.textContent = `Колья: ${betAmount}йен / Возврат: ${payoutAmount.toFixed(2)}円`;
             });
 
-            // 入力がない馬の賭け金額と払戻し金額をリセット
+            // 入力がないкольяとВозвратをリセット
             for (let i = 1; i <= maxHorses; i++) {
                 if (!oddsList.some(entry => entry.horse === i)) {
-                    document.getElementById(`result${i}`).textContent = "賭け金額: - 円 / 払戻し金額: - 円";
+                    document.getElementById(`result${i}`).textContent = "Колья: - йен / Возврат: - йен";
                 }
             }
         }
