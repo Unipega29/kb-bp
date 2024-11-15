@@ -154,7 +154,7 @@
             // 各オッズの最低賭け金額を計算
             oddsList.forEach(entry => {
                 const targetPayout = totalAmount * 1.1;
-                const minimumBetAmount = Math.max(100, Math.ceil(targetPayout / entry.odds / 100) * 100);
+                const minimumBetAmount = Math.max(100, Math.ceil(targetPayout / entry.odds / 100) * 100); // 100円単位に丸め
                 const payoutAmount = Math.floor(minimumBetAmount * entry.odds);
 
                 document.getElementById(`bet${entry.horse}`).textContent = minimumBetAmount.toLocaleString();
@@ -171,8 +171,8 @@
             for (let i = 0; i < oddsList.length && count < distributionPercentages.length; i++) {
                 const entry = oddsList[i];
                 if (entry.odds >= 4) {
-                    const additionalAmount = (remainingSum * remainingPercentage[count]) / 100;
-                    const updatedBetAmount = parseFloat(document.getElementById(`bet${entry.horse}`).textContent.replace(/,/g, '')) + Math.ceil(additionalAmount);
+                    const additionalAmount = Math.ceil((remainingSum * remainingPercentage[count]) / 100); // 100円単位に丸め
+                    const updatedBetAmount = parseFloat(document.getElementById(`bet${entry.horse}`).textContent.replace(/,/g, '')) + additionalAmount;
                     document.getElementById(`bet${entry.horse}`).textContent = updatedBetAmount.toLocaleString();
 
                     const updatedPayoutAmount = Math.floor(updatedBetAmount * entry.odds);
