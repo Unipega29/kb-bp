@@ -38,7 +38,7 @@
     <h1>Инструменты для распределения средств</h1>
     <p> </p>
 
-    <label for="totalAmount">общие средства:</label>
+    <label for="totalAmount">Общие средства:</label>
     <input type="number" id="totalAmount" required>
     <button onclick="calculateBetting()">Рассчитать</button>
     <br><br>
@@ -110,7 +110,7 @@
                 const payoutAmount = betAmount * entry.odds;
 
                 const resultSpan = document.getElementById(`result${entry.horse}`);
-                resultSpan.textContent = `Колья: ${betAmount}йен / Возврат: ${payoutAmount.toFixed(2)}円`;
+                resultSpan.textContent = `Колья: ${betAmount}йен / Возврат: ${payoutAmount.toFixed(2)}йен`;
             });
 
             // 入力がないкольяとВозвратをリセット
