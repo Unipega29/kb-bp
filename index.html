@@ -70,7 +70,7 @@
             const resultSpan = document.createElement('span');
             resultSpan.classList.add('result-text');
             resultSpan.id = `result${i}`;
-            resultSpan.textContent = "колья: - йен / возврат: - йен";
+            resultSpan.textContent = "колья: -  / возврат: - ";
 
             div.appendChild(label);
             div.appendChild(input);
@@ -110,13 +110,13 @@
                 const payoutAmount = betAmount * entry.odds;
 
                 const resultSpan = document.getElementById(`result${entry.horse}`);
-                resultSpan.textContent = `Колья: ${betAmount}йен / Возврат: ${payoutAmount.toFixed(2)}йен`;
+                resultSpan.textContent = `Колья: ${betAmount} / Возврат: ${payoutAmount.toFixed(2)}`;
             });
 
             // 入力がないкольяとВозвратをリセット
             for (let i = 1; i <= maxHorses; i++) {
                 if (!oddsList.some(entry => entry.horse === i)) {
-                    document.getElementById(`result${i}`).textContent = "Колья: - йен / Возврат: - йен";
+                    document.getElementById(`result${i}`).textContent = "Колья: -  / Возврат: - ";
                 }
             }
         }
