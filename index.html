@@ -13,12 +13,10 @@
             box-sizing: border-box;
             text-align: center;
         }
-    input[type="number"] {
-        width: 77px; /* オッズ入力欄の幅を狭く設定 */
-        text-align: center;
-    }
-
-        
+        input[type="number"] {
+            width: 77px; /* オッズ入力欄の幅を狭く設定 */
+            text-align: center;
+        }
         table {
             width: 80%;
             margin: 20px auto;
@@ -202,6 +200,36 @@
                 document.getElementById(`payout${entry.horse}`).textContent = Math.floor(updatedBetAmount * entry.odds).toLocaleString();
 
                 totalBetAmount += additionalAmount;
+                remainingSum -= additionalAmount;
+            }
+
+            // 余った資金があれば、最も低いオッズと2番目に低いオッズに分配
+            if (remainingSum > 0) {
+                // オッズと賭け金をペアにしてオッズでソート
+                const sortedOddsList = oddsList.map(entry => ({
+                    horse: entry.horse,
+                    odds: entry.odds,
+                    betAmount: parseFloat(document.getElementById(`bet${entry.horse}`).textContent.replace(/,/g, ''))
+                })).sort((a, b) => a.odds - b.odds);
+
+                // 資金を均等に分配
+                const lowestBet = sortedOddsList[0];
+                const secondLowestBet = sortedOddsList[1];
+
+                // 最低オッズに余った資金を優先的に加算
+                const additionalToLowest = Math.floor(remainingSum / 2 / 100) * 100;
+                const additionalToSecondLowest = remainingSum - additionalToLowest;
+
+                const updatedLowestBetAmount = lowestBet.betAmount + additionalToLowest;
+                const updatedSecondLowestBetAmount = secondLowestBet.betAmount + additionalToSecondLowest;
+
+                document.getElementById(`bet${lowestBet.horse}`).textContent = updatedLowestBetAmount.toLocaleString();
+                document.getElementById(`payout${lowestBet.horse}`).textContent = Math.floor(updatedLowestBetAmount * lowestBet.odds).toLocaleString();
+
+                document.getElementById(`bet${secondLowestBet.horse}`).textContent = updatedSecondLowestBetAmount.toLocaleString();
+                document.getElementById(`payout${secondLowestBet.horse}`).textContent = Math.floor(updatedSecondLowestBetAmount * secondLowestBet.odds).toLocaleString();
+
+                totalBetAmount += additionalToLowest + additionalToSecondLowest;
             }
 
             document.getElementById('totalBetAmount').textContent = totalBetAmount.toLocaleString();
