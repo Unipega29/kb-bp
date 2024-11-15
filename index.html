@@ -11,14 +11,15 @@
             margin: 0;
             padding: 20px;
             box-sizing: border-box;
+            text-align: center;
         }
         table {
-            width: 100%;
+            width: 80%;
+            margin: 20px auto;
             border-collapse: collapse;
-            margin-top: 20px;
         }
         colgroup col:nth-child(2) {
-            width: 60%; /* Увел. 列の幅を全体に対して 60% */
+            width: 60%;
         }
         th, td {
             text-align: center;
@@ -48,13 +49,14 @@
     <input type="number" id="totalAmount" required>
     <button onclick="calculateBetting()">Рассчитать</button>
     <button onclick="clearTable()">Очистить</button>
+    <button onclick="pasteOdds()">貼り付け</button>
 
     <table>
         <colgroup>
-            <col> <!-- Номер -->
-            <col> <!-- Увел. -->
-            <col> <!-- Колья -->
-            <col> <!-- Возврат -->
+            <col>
+            <col>
+            <col>
+            <col>
         </colgroup>
         <thead>
             <tr>
@@ -70,19 +72,16 @@
     </table>
 
     <script>
-        // 最大18頭分のテーブル行を生成
         const maxHorses = 18;
         const tableBody = document.getElementById('tableBody');
 
         for (let i = 1; i <= maxHorses; i++) {
             const row = document.createElement('tr');
 
-            // 左側の番号列
             const numberCell = document.createElement('td');
             numberCell.textContent = i;
             numberCell.classList.add('number-col');
 
-            // オッズ入力列
             const oddsCell = document.createElement('td');
             const oddsInput = document.createElement('input');
             oddsInput.type = 'number';
@@ -91,17 +90,14 @@
             oddsInput.onblur = () => validateOdds(oddsInput);
             oddsCell.appendChild(oddsInput);
 
-            // 賭け金表示列
             const betCell = document.createElement('td');
             betCell.id = `bet${i}`;
             betCell.textContent = "-";
 
-            // 払戻し金表示列
             const payoutCell = document.createElement('td');
             payoutCell.id = `payout${i}`;
             payoutCell.textContent = "-";
 
-            // 行にセルを追加
             row.appendChild(numberCell);
             row.appendChild(oddsCell);
             row.appendChild(betCell);
@@ -109,12 +105,24 @@
             tableBody.appendChild(row);
         }
 
-        // オッズの入力値をチェック
         function validateOdds(input) {
             const oddsValue = parseFloat(input.value);
             if (!isNaN(oddsValue) && oddsValue < 4) {
                 alert("Введите минимум 4 !!!");
-                input.value = ''; // エラー後にクリア
+                input.value = '';
+            }
+        }
+
+        async function pasteOdds() {
+            try {
+                const text = await navigator.clipboard.readText();
+                const oddsArray = text.split(/\s+/).map(Number).filter(num => !isNaN(num));
+
+                for (let i = 0; i < maxHorses && i < oddsArray.length; i++) {
+                    document.getElementById(`odds${i + 1}`).value = oddsArray[i];
+                }
+            } catch (err) {
+                alert("クリップボードの内容を読み込めませんでした。");
             }
         }
 
@@ -137,11 +145,10 @@
             let totalOddsSum = oddsList.reduce((sum, entry) => sum + (1 / entry.odds), 0);
 
             oddsList.forEach(entry => {
-                const targetPayout = totalAmount * 1.1; // 払戻しが総資金の110%以上
-                const betAmount = Math.max(100, Math.ceil((targetPayout / entry.odds) / 100) * 100); // 100円単位
+                const targetPayout = totalAmount * 1.1;
+                const betAmount = Math.max(100, Math.ceil((targetPayout / entry.odds) / 100) * 100);
                 const payoutAmount = Math.floor(betAmount * entry.odds);
 
-                // カンマ区切りで表示
                 document.getElementById(`bet${entry.horse}`).textContent = betAmount.toLocaleString();
                 document.getElementById(`payout${entry.horse}`).textContent = payoutAmount.toLocaleString();
             });
@@ -156,9 +163,9 @@
 
         function clearTable() {
             for (let i = 1; i <= maxHorses; i++) {
-                document.getElementById(`odds${i}`).value = ''; // オッズ入力をクリア
-                document.getElementById(`bet${i}`).textContent = "-"; // 賭け金リセット
-                document.getElementById(`payout${i}`).textContent = "-"; // 払戻し金リセット
+                document.getElementById(`odds${i}`).value = '';
+                document.getElementById(`bet${i}`).textContent = "-";
+                document.getElementById(`payout${i}`).textContent = "-";
             }
         }
     </script>
