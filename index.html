@@ -19,7 +19,7 @@
             border-collapse: collapse;
         }
         colgroup col:nth-child(2) {
-            width: 40%;
+            width: 60%;
         }
         th, td {
             text-align: center;
@@ -57,10 +57,6 @@
     <button onclick="calculateBetting()">Рассчитать</button>
     <button onclick="pasteOdds()">Вставить</button>
 
-    <div class="total-bet">
-        <p>Общие ставки: <span id="totalBetAmount">0</span>円</p>
-    </div>
-
     <table>
         <colgroup>
             <col>
@@ -81,7 +77,9 @@
         </tbody>
         <tfoot>
             <tr>
-                <td colspan="4" style="text-align: center; font-weight: bold;">Общие ставки</td>
+                <td colspan="4" style="text-align: center;">
+                    Общие ставки: <span id="totalBetAmount">0</span>円
+                </td>
             </tr>
         </tfoot>
     </table>
@@ -89,10 +87,11 @@
     <button class="clear-btn" onclick="clearTable()">Очистить</button>
 
     <script>
-        const maxHorses = 18;
+        const maxHorses = 18; // 最大18頭
         const tableBody = document.getElementById('tableBody');
         const distributionPercentages = [29.34, 21.03, 14.35, 11.83, 8.33, 5.63, 4.59, 3.31, 1.59];
 
+        // テーブル行を生成
         for (let i = 1; i <= maxHorses; i++) {
             const row = document.createElement('tr');
 
@@ -105,6 +104,7 @@
             oddsInput.type = 'number';
             oddsInput.step = '0.1';
             oddsInput.id = `odds${i}`;
+            oddsInput.onblur = () => validateOdds(oddsInput, row);
             oddsCell.appendChild(oddsInput);
 
             const betCell = document.createElement('td');
@@ -120,6 +120,37 @@
             row.appendChild(betCell);
             row.appendChild(payoutCell);
             tableBody.appendChild(row);
+        }
+
+        function validateOdds(input, row) {
+            const oddsValue = parseFloat(input.value);
+            if (!isNaN(oddsValue) && oddsValue < 4) {
+                alert("オッズは4以上でなければなりません。");
+                input.value = '';
+                tableBody.removeChild(row); // 該当行を削除
+                // 行番号を更新
+                const rows = Array.from(tableBody.rows);
+                rows.forEach((row, index) => {
+                    row.cells[0].textContent = index + 1;
+                });
+            }
+        }
+
+        async function pasteOdds() {
+            try {
+                const text = await navigator.clipboard.readText();
+                const oddsArray = text.split(/\s+/).map(Number).filter(num => !isNaN(num));
+
+                let rowIndex = 0;
+                oddsArray.forEach((odds, i) => {
+                    if (odds >= 4 && rowIndex < maxHorses) {
+                        document.getElementById(`odds${rowIndex + 1}`).value = odds;
+                        rowIndex++;
+                    }
+                });
+            } catch (err) {
+                alert("クリップボードの内容を読み込めませんでした。");
+            }
         }
 
         function calculateBetting() {
@@ -165,20 +196,6 @@
                 document.getElementById(`payout${entry.horse}`).textContent = Math.floor(updatedBetAmount * entry.odds).toLocaleString();
 
                 totalBetAmount += additionalAmount;
-            }
-
-            // 資金が余った場合、オッズの上位から順に100円ずつ追加
-            while (remainingAmount >= 100) {
-                for (let entry of oddsList) {
-                    if (remainingAmount < 100) break;
-
-                    const currentBet = parseInt(document.getElementById(`bet${entry.horse}`).textContent.replace(/,/g, ''), 10);
-                    document.getElementById(`bet${entry.horse}`).textContent = (currentBet + 100).toLocaleString();
-                    document.getElementById(`payout${entry.horse}`).textContent = Math.floor((currentBet + 100) * entry.odds).toLocaleString();
-
-                    totalBetAmount += 100;
-                    remainingAmount -= 100;
-                }
             }
 
             document.getElementById('totalBetAmount').textContent = totalBetAmount.toLocaleString();
