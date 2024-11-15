@@ -3,40 +3,94 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>競馬資金配分ツール</title>
+    <title>Инструменты для распределения средств на скачках</title>
 </head>
 <body>
-    <h1>競馬資金配分ツール</h1>
-    <p>2つの馬のオッズと総資金を入力して、最適な配分を計算します。</p>
-    <label for="odds1">馬1のオッズ:</label>
-    <input type="number" id="odds1" step="0.1" required><br>
+    <h1>Инструменты для распределения средств на скачках</h1>
+    <p>шнв</p>
 
-    <label for="odds2">馬2のオッズ:</label>
-    <input type="number" id="odds2" step="0.1" required><br>
+    <label for="totalAmount">общие средства:</label>
+    <input type="number" id="totalAmount" required><br><br>
 
-    <label for="totalAmount">総資金:</label>
-    <input type="number" id="totalAmount" required><br>
+    <!-- 各馬のオッズ入力フィールド -->
+    <div id="oddsContainer">
+        <!-- JavaScriptでオッズ入力フィールドを追加します -->
+    </div>
 
-    <button onclick="calculateBetting()">計算</button>
+    <button onclick="calculateBetting()">расчет</button>
 
-    <h2>結果</h2>
-    <p id="result"></p>
+    <h2>резултат</h2>
+    <table id="resultTable" border="1">
+        <thead>
+            <tr>
+                <th>номер</th>
+                <th>шнв</th>
+                <th>колья</th>
+                <th>возврат</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- JavaScriptで結果を表示します -->
+        </tbody>
+    </table>
 
     <script>
-        function calculateBetting() {
-            const odds1 = parseFloat(document.getElementById("odds1").value);
-            const odds2 = parseFloat(document.getElementById("odds2").value);
-            const totalAmount = parseFloat(document.getElementById("totalAmount").value);
+        // 最大18頭分のオッズ入力フィールドを生成
+        const maxHorses = 18;
+        const oddsContainer = document.getElementById('oddsContainer');
 
-            if (isNaN(odds1) || isNaN(odds2) || isNaN(totalAmount)) {
-                document.getElementById("result").textContent = "すべてのフィールドに値を入力してください。";
+        for (let i = 1; i <= maxHorses; i++) {
+            const label = document.createElement('label');
+            label.textContent = `лошадь${i}шнв:`;
+            const input = document.createElement('input');
+            input.type = 'number';
+            input.step = '0.1';
+            input.required = true;
+            input.id = `odds${i}`;
+            oddsContainer.appendChild(label);
+            oddsContainer.appendChild(input);
+            oddsContainer.appendChild(document.createElement('br'));
+        }
+
+        function calculateBetting() {
+            const totalAmount = parseFloat(document.getElementById("totalAmount").value);
+            if (isNaN(totalAmount)) {
+                alert("введите общие средства");
                 return;
             }
 
-            const bet1 = (totalAmount * odds2) / (odds1 + odds2);
-            const bet2 = totalAmount - bet1;
+            let oddsList = [];
+            for (let i = 1; i <= maxHorses; i++) {
+                const oddsValue = parseFloat(document.getElementById(`odds${i}`).value);
+                if (!isNaN(oddsValue) && oddsValue > 0) {
+                    oddsList.push({ horse: i, odds: oddsValue });
+                }
+            }
 
-            document.getElementById("result").innerHTML = `馬1に賭ける金額: ${bet1.toFixed(2)}円<br>馬2に賭ける金額: ${bet2.toFixed(2)}円`;
+            // 入力された馬がいない場合
+            if (oddsList.length === 0) {
+                alert("введите шнв");
+                return;
+            }
+
+            const resultTableBody = document.querySelector("#resultTable tbody");
+            resultTableBody.innerHTML = ""; // 結果の初期化
+
+            let totalOddsSum = oddsList.reduce((sum, entry) => sum + (1 / entry.odds), 0);
+
+            oddsList.forEach(entry => {
+                const betAmount = (totalAmount / totalOddsSum) * (1 / entry.odds);
+                const payoutAmount = betAmount * entry.odds;
+
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${entry.horse}</td>
+                    <td>${entry.odds.toFixed(2)}</td>
+                    <td>${betAmount.toFixed(2)}円</td>
+                    <td>${payoutAmount.toFixed(2)}円</td>
+                `;
+                resultTableBody.appendChild(row);
+            });
         }
     </script>
 </body>
