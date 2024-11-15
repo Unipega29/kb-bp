@@ -19,7 +19,11 @@
             border-collapse: collapse;
         }
         colgroup col:nth-child(2) {
-            width: 60%;
+            width: 30%;
+        }
+        colgroup col:nth-child(3),
+        colgroup col:nth-child(4) {
+            width: 35%;
         }
         th, td {
             text-align: center;
@@ -40,11 +44,14 @@
             padding: 5px;
             margin-top: 10px;
         }
+        .total-bet-row {
+            background-color: lightblue;
+            font-weight: bold;
+        }
         .clear-btn {
             margin-top: 20px;
         }
         .total-bet {
-            font-weight: bold;
             margin: 10px 0;
         }
     </style>
@@ -56,10 +63,6 @@
     <input type="number" id="totalAmount" required>
     <button onclick="calculateBetting()">Рассчитать</button>
     <button onclick="pasteOdds()">Вставить</button>
-
-    <div class="total-bet">
-        <p>Общие ставки: <span id="totalBetAmount">0</span>円</p>
-    </div>
 
     <table>
         <colgroup>
@@ -79,6 +82,11 @@
         <tbody id="tableBody">
             <!-- データ行を動的に生成 -->
         </tbody>
+        <tfoot>
+            <tr class="total-bet-row">
+                <td colspan="4">Общие ставки: <span id="totalBetAmount">0</span>円</td>
+            </tr>
+        </tfoot>
     </table>
 
     <button class="clear-btn" onclick="clearTable()">Очистить</button>
@@ -125,10 +133,9 @@
                 alert("オッズは4以上でなければなりません。");
                 input.value = '';
                 tableBody.removeChild(row); // 該当行を削除
-                // 行番号を更新
                 const rows = Array.from(tableBody.rows);
                 rows.forEach((row, index) => {
-                    row.cells[0].textContent = index + 1;
+                    row.cells[0].textContent = index + 1; // 行番号を更新
                 });
             }
         }
@@ -181,31 +188,6 @@
                 totalBetAmount += minimumBetAmount;
             });
 
-            let remainingPercentage = [...distributionPercentages];
-            let remainingSum = remainingAmount;
-
-            for (let i = 0; i < oddsList.length && i < distributionPercentages.length; i++) {
+            for (let i = 0; remainingAmount >= 100 && i < oddsList.length; i++) {
                 const entry = oddsList[i];
-                const additionalAmount = Math.floor((remainingSum * remainingPercentage[i]) / 100 / 100) * 100;
-                const updatedBetAmount = parseFloat(document.getElementById(`bet${entry.horse}`).textContent.replace(/,/g, '')) + additionalAmount;
-
-                document.getElementById(`bet${entry.horse}`).textContent = updatedBetAmount.toLocaleString();
-                document.getElementById(`payout${entry.horse}`).textContent = Math.floor(updatedBetAmount * entry.odds).toLocaleString();
-
-                totalBetAmount += additionalAmount;
-            }
-
-            document.getElementById('totalBetAmount').textContent = totalBetAmount.toLocaleString();
-        }
-
-        function clearTable() {
-            for (let i = 1; i <= maxHorses; i++) {
-                document.getElementById(`odds${i}`).value = '';
-                document.getElementById(`bet${i}`).textContent = "-";
-                document.getElementById(`payout${i}`).textContent = "-";
-            }
-            document.getElementById('totalBetAmount').textContent = "0";
-        }
-    </script>
-</body>
-</html>
+                const
