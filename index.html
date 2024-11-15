@@ -13,10 +13,6 @@
             box-sizing: border-box;
             text-align: center;
         }
-    input[type="number"] {
-        width: 77px; /* オッズ入力欄の幅を狭く設定 */
-        text-align: center;
-    }
         table {
             width: 80%;
             margin: 20px auto;
@@ -61,6 +57,10 @@
     <button onclick="calculateBetting()">Рассчитать</button>
     <button onclick="pasteOdds()">Вставить</button>
 
+    <div class="total-bet">
+        <p>Общие ставки: <span id="totalBetAmount">0</span>円</p>
+    </div>
+
     <table>
         <colgroup>
             <col>
@@ -72,20 +72,13 @@
             <tr>
                 <th>Номер</th>
                 <th>Увел.</th>
-                <th>  Ставки  </th>
-                <th>  Возврат  </th>
+                <th>Ставки</th>
+                <th>Возврат</th>
             </tr>
         </thead>
         <tbody id="tableBody">
             <!-- データ行を動的に生成 -->
         </tbody>
-        <tfoot>
-            <tr>
-                <td colspan="4" style="text-align: center;">
-                    Общие ставки: <span id="totalBetAmount">0</span>円
-                </td>
-            </tr>
-        </tfoot>
     </table>
 
     <button class="clear-btn" onclick="clearTable()">Очистить</button>
@@ -176,6 +169,7 @@
             let remainingAmount = totalAmount;
             let totalBetAmount = 0;
 
+            // 賭け金の初期計算
             oddsList.forEach(entry => {
                 const targetPayout = totalAmount * 1.1;
                 const minimumBetAmount = Math.max(100, Math.ceil(targetPayout / entry.odds / 100) * 100);
@@ -188,18 +182,18 @@
                 totalBetAmount += minimumBetAmount;
             });
 
-            let remainingPercentage = [...distributionPercentages];
-            let remainingSum = remainingAmount;
-
-            for (let i = 0; i < oddsList.length && i < distributionPercentages.length; i++) {
-                const entry = oddsList[i];
-                const additionalAmount = Math.floor((remainingSum * remainingPercentage[i]) / 100 / 100) * 100;
-                const updatedBetAmount = parseFloat(document.getElementById(`bet${entry.horse}`).textContent.replace(/,/g, '')) + additionalAmount;
-
-                document.getElementById(`bet${entry.horse}`).textContent = updatedBetAmount.toLocaleString();
-                document.getElementById(`payout${entry.horse}`).textContent = Math.floor(updatedBetAmount * entry.odds).toLocaleString();
-
-                totalBetAmount += additionalAmount;
+            // 資金が残っている場合、100円ずつ上から追加
+            while (remainingAmount >= 100 && oddsList.length > 0) {
+                for (let i = 0; i < oddsList.length; i++) {
+                    const entry = oddsList[i];
+                    if (remainingAmount >= 100) {
+                        const updatedBetAmount = parseFloat(document.getElementById(`bet${entry.horse}`).textContent.replace(/,/g, '')) + 100;
+                        document.getElementById(`bet${entry.horse}`).textContent = updatedBetAmount.toLocaleString();
+                        document.getElementById(`payout${entry.horse}`).textContent = Math.floor(updatedBetAmount * entry.odds).toLocaleString();
+                        remainingAmount -= 100;
+                        totalBetAmount += 100;
+                    }
+                }
             }
 
             document.getElementById('totalBetAmount').textContent = totalBetAmount.toLocaleString();
