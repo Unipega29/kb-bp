@@ -12,20 +12,24 @@
             padding: 20px;
             box-sizing: border-box;
         }
-        .input-group {
-            display: flex;
-            align-items: center;
-            margin-bottom: 10px;
-            flex-wrap: nowrap;
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
         }
-        .odds-input {
-            width: 6ch;
-            margin-left: 10px;
+        th, td {
+            text-align: center;
+            padding: 8px;
+            border: 1px solid white; /* セル間の枠線を白に変更 */
         }
-        .result-text {
-            margin-left: 10px;
-            min-width: 180px;
-            white-space: nowrap;
+        th {
+            background-color: mediumaquamarine;
+        }
+        td {
+            background-color: cornflowerblue;
+        }
+        .number-col {
+            background-color: mediumaquamarine;
         }
         #totalAmount, button {
             font-size: 1em;
@@ -36,46 +40,64 @@
 </head>
 <body>
     <h1>Инструменты для распределения средств</h1>
-    <p></p>
 
     <label for="totalAmount">Общие средства:</label>
     <input type="number" id="totalAmount" required>
     <button onclick="calculateBetting()">Рассчитать</button>
-    <br><br>
+    <button onclick="clearTable()">クリア</button>
 
-    <div id="oddsContainer">
-        <!-- 入力欄を生成 -->
-    </div>
+    <table>
+        <thead>
+            <tr>
+                <th>Номер</th>
+                <th>Увеличение</th>
+                <th>Колья</th>
+                <th>Возврат</th>
+            </tr>
+        </thead>
+        <tbody id="tableBody">
+            <!-- データ行を動的に生成 -->
+        </tbody>
+    </table>
 
     <script>
-        // 最大18入力欄を生成
+        // 最大18頭分のテーブル行を生成
         const maxHorses = 18;
-        const oddsContainer = document.getElementById('oddsContainer');
+        const tableBody = document.getElementById('tableBody');
 
         for (let i = 1; i <= maxHorses; i++) {
-            const div = document.createElement('div');
-            div.classList.add('input-group');
+            const row = document.createElement('tr');
 
-            const label = document.createElement('label');
-            label.textContent = ` ${i} `;
-            
-            const input = document.createElement('input');
-            input.type = 'number';
-            input.step = '0.1';
-            input.required = true;
-            input.classList.add('odds-input');
-            input.id = `odds${i}`;
-            input.onblur = () => validateOdds(input); // フォーカスが外れたときにチェック
+            // 左側の番号列
+            const numberCell = document.createElement('td');
+            numberCell.textContent = i;
+            numberCell.classList.add('number-col');
 
-            const resultSpan = document.createElement('span');
-            resultSpan.classList.add('result-text');
-            resultSpan.id = `result${i}`;
-            resultSpan.textContent = "Колья: - / Возврат: -";
+            // オッズ入力列
+            const oddsCell = document.createElement('td');
+            const oddsInput = document.createElement('input');
+            oddsInput.type = 'number';
+            oddsInput.step = '0.1';
+            oddsInput.id = `odds${i}`;
+            oddsInput.onblur = () => validateOdds(oddsInput);
+            oddsCell.appendChild(oddsInput);
 
-            div.appendChild(label);
-            div.appendChild(input);
-            div.appendChild(resultSpan);
-            oddsContainer.appendChild(div);
+            // 賭け金表示列
+            const betCell = document.createElement('td');
+            betCell.id = `bet${i}`;
+            betCell.textContent = "-";
+
+            // 払戻し金表示列
+            const payoutCell = document.createElement('td');
+            payoutCell.id = `payout${i}`;
+            payoutCell.textContent = "-";
+
+            // 行にセルを追加
+            row.appendChild(numberCell);
+            row.appendChild(oddsCell);
+            row.appendChild(betCell);
+            row.appendChild(payoutCell);
+            tableBody.appendChild(row);
         }
 
         // オッズの入力値をチェック
@@ -105,22 +127,29 @@
 
             let totalOddsSum = oddsList.reduce((sum, entry) => sum + (1 / entry.odds), 0);
 
-            // 資金配分を計算して、払戻し金額が総資金よりも多くなるように調整
             oddsList.forEach(entry => {
-                // 払戻し金額が総資金を上回るようにするために、余裕を持って設定
                 const targetPayout = totalAmount * 1.1; // 払戻しが総資金の110%以上
                 const betAmount = Math.max(100, Math.ceil((targetPayout / entry.odds) / 100) * 100); // 100円単位
-                const payoutAmount = Math.floor(betAmount * entry.odds); // 小数点以下を切り捨て
+                const payoutAmount = Math.floor(betAmount * entry.odds);
 
-                const resultSpan = document.getElementById(`result${entry.horse}`);
-                resultSpan.textContent = `Колья: ${betAmount} / Возврат: ${payoutAmount}`;
+                // カンマ区切りで表示
+                document.getElementById(`bet${entry.horse}`).textContent = betAmount.toLocaleString();
+                document.getElementById(`payout${entry.horse}`).textContent = payoutAmount.toLocaleString();
             });
 
-            // 入力がないкольяとВозвратをリセット
             for (let i = 1; i <= maxHorses; i++) {
                 if (!oddsList.some(entry => entry.horse === i)) {
-                    document.getElementById(`result${i}`).textContent = "Колья: - / Возврат: -";
+                    document.getElementById(`bet${i}`).textContent = "-";
+                    document.getElementById(`payout${i}`).textContent = "-";
                 }
+            }
+        }
+
+        function clearTable() {
+            for (let i = 1; i <= maxHorses; i++) {
+                document.getElementById(`odds${i}`).value = ''; // オッズ入力をクリア
+                document.getElementById(`bet${i}`).textContent = "-"; // 賭け金リセット
+                document.getElementById(`payout${i}`).textContent = "-"; // 払戻し金リセット
             }
         }
     </script>
