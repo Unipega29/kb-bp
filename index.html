@@ -65,7 +65,7 @@
             input.required = true;
             input.classList.add('odds-input');
             input.id = `odds${i}`;
-            input.oninput = () => checkOdds(i); // オッズ入力時にチェック
+            input.onblur = () => validateOdds(input); // フォーカスが外れたときにチェック
 
             const resultSpan = document.createElement('span');
             resultSpan.classList.add('result-text');
@@ -78,13 +78,12 @@
             oddsContainer.appendChild(div);
         }
 
-        function checkOdds(horseIndex) {
-            const oddsValue = parseFloat(document.getElementById(`odds${horseIndex}`).value);
+        // オッズの入力値をチェック
+        function validateOdds(input) {
+            const oddsValue = parseFloat(input.value);
             if (!isNaN(oddsValue) && oddsValue < 4) {
                 alert("Введите минимум 4 !!!");
-                document.getElementById(`odds${horseIndex}`).value = ''; // エラー後にクリア
-            } else {
-                calculateBetting();
+                input.value = ''; // エラー後にクリア
             }
         }
 
@@ -102,12 +101,6 @@
                 if (!isNaN(oddsValue) && oddsValue >= 4) {
                     oddsList.push({ horse: i, odds: oddsValue });
                 }
-            }
-
-            // 入力されていない場合
-            if (oddsList.length === 0) {
-                alert("Введите минимум 2");
-                return;
             }
 
             let totalOddsSum = oddsList.reduce((sum, entry) => sum + (1 / entry.odds), 0);
