@@ -43,6 +43,10 @@
         .clear-btn {
             margin-top: 20px;
         }
+        .total-bet {
+            font-weight: bold;
+            margin-top: 20px;
+        }
     </style>
 </head>
 <body>
@@ -74,6 +78,10 @@
     </table>
 
     <button class="clear-btn" onclick="clearTable()">Очистить</button>
+
+    <div class="total-bet">
+        <p>合計賭け金: <span id="totalBetAmount">0</span>円</p>
+    </div>
 
     <script>
         const maxHorses = 18; // 18頭に戻す
@@ -151,6 +159,8 @@
             // 最低賭け金額を計算し、資金を分配
             let remainingAmount = totalAmount;
 
+            let totalBetAmount = 0; // 合計賭け金を初期化
+
             // 各オッズの最低賭け金額を計算
             oddsList.forEach(entry => {
                 const targetPayout = totalAmount * 1.1;
@@ -161,6 +171,8 @@
                 document.getElementById(`payout${entry.horse}`).textContent = payoutAmount.toLocaleString();
 
                 remainingAmount -= minimumBetAmount;
+
+                totalBetAmount += minimumBetAmount; // 合計賭け金を更新
             });
 
             // 残りの資金を指定された割合で分配
@@ -178,9 +190,13 @@
                     const updatedPayoutAmount = Math.floor(updatedBetAmount * entry.odds);
                     document.getElementById(`payout${entry.horse}`).textContent = updatedPayoutAmount.toLocaleString();
 
+                    totalBetAmount += additionalAmount; // 合計賭け金を更新
                     count++;
                 }
             }
+
+            // 合計賭け金を表示
+            document.getElementById('totalBetAmount').textContent = totalBetAmount.toLocaleString();
         }
 
         function clearTable() {
@@ -189,6 +205,7 @@
                 document.getElementById(`bet${i}`).textContent = "-";
                 document.getElementById(`payout${i}`).textContent = "-";
             }
+            document.getElementById('totalBetAmount').textContent = "0";
         }
     </script>
 </body>
