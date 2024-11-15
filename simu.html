@@ -1,48 +1,125 @@
-import random
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>賭け金シミュレーション</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+        #simulation-results {
+            margin-top: 20px;
+        }
+        #chart {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>賭け金シミュレーション</h1>
+    <label for="initial-funds">初期資金 (円): </label>
+    <input type="number" id="initial-funds" value="10000" min="1"><br><br>
+    <button onclick="runSimulation()">シミュレーション開始</button>
 
-# 初期設定
-initial_capital = 100000  # 初期資金
-odds = [4.5, 5.2, 6.0, 7.0, 4.2, 6.5, 3.8, 5.5, 4.3, 8.0, 4.8, 5.0, 4.0, 6.7, 7.2, 4.1, 5.9, 4.4]  # オッズ
-distribution_percentages = [29.34, 21.03, 14.35, 11.83, 8.33, 5.63, 4.59, 3.31, 1.59]  # 分割割合
-max_horses = len(odds)
-num_trials = 1000  # 試行回数
+    <div id="simulation-results"></div>
+    <div id="chart"></div>
 
-# 賭け金を計算する関数
-def calculate_bets(total_amount, odds, distribution_percentages):
-    remaining_amount = total_amount
-    bets = []
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        function runSimulation() {
+            const initialFunds = parseFloat(document.getElementById("initial-funds").value);
+            if (isNaN(initialFunds) || initialFunds <= 0) {
+                alert("有効な初期資金を入力してください");
+                return;
+            }
 
-    # 最低賭け金額の計算
-    for i in range(len(odds)):
-        odds_value = odds[i]
-        if odds_value >= 4:  # オッズが4以上の場合のみ計算
-            minimum_bet = max(100, (total_amount * 1.1) / odds_value // 100 * 100)  # 最低賭け金額を100円単位
-            remaining_amount -= minimum_bet
-            bets.append({'horse': i + 1, 'bet': minimum_bet, 'odds': odds_value})
+            const totalSimulations = 1000;
+            const capitalHistory = [];
+            let currentCapital = initialFunds;
 
-    # 残った資金を割合に従って分ける
-    count = 0
-    for bet in bets:
-        if count < len(distribution_percentages):
-            additional_bet = (remaining_amount * distribution_percentages[count]) / 100
-            bet['bet'] += int(additional_bet // 100 * 100)  # 100円単位で加算
-            count += 1
+            const odds = [4.0, 4.5, 5.0, 6.0, 6.5, 7.0, 7.5, 8.0, 9.0]; // 賭けるオッズ
+            const betPercentages = [29.34, 21.03, 14.35, 11.83, 8.33, 5.63, 4.59, 3.31, 1.59]; // 賭けの割合
 
-    return bets, remaining_amount
+            function calculateBetting() {
+                let betAmounts = [];
+                let remainingFunds = currentCapital;
 
-# シミュレーション
-capital = initial_capital
-capital_history = [capital]
+                // 最低額の賭け金を設定
+                odds.forEach((odd, index) => {
+                    const minBet = Math.ceil((currentCapital / odd) / 100) * 100; // 最低賭け金（100円単位）
+                    betAmounts.push(minBet);
+                    remainingFunds -= minBet;
+                });
 
-for _ in range(num_trials):
-    if random.random() < 0.1:  # 10%の確率で賭け金が0になる
-        capital = 0
-    else:
-        bets, remaining_amount = calculate_bets(capital, odds, distribution_percentages)
-        total_payout = sum([bet['bet'] * bet['odds'] for bet in bets])  # 払戻額
-        capital = capital - sum([bet['bet'] for bet in bets]) + total_payout  # 資金の更新
-    
-    capital_history.append(capital)
+                // 残り資金を割合で分ける
+                betAmounts = betAmounts.map((bet, index) => {
+                    const addAmount = Math.floor(remainingFunds * (betPercentages[index] / 100) / 100) * 100;
+                    return bet + addAmount;
+                });
 
-# 結果表示
-capital_history[:20], capital_history[-20:]  # 最初と最後の20回分を表示
+                return betAmounts;
+            }
+
+            // シミュレーションを実行
+            for (let i = 0; i < totalSimulations; i++) {
+                const betAmounts = calculateBetting();
+                const outcome = betAmounts.map((bet, index) => {
+                    const result = Math.random() < 0.1 ? 0 : bet * odds[index]; // 10%の確率で失敗
+                    return result;
+                });
+
+                const finalCapital = currentCapital + outcome.reduce((acc, amount) => acc + amount, 0);
+                capitalHistory.push(finalCapital);
+                currentCapital = finalCapital; // 資金を更新
+            }
+
+            // 結果を表示
+            displayResults(capitalHistory);
+        }
+
+        function displayResults(capitalHistory) {
+            // 最初と最後の20回の資金の動きを表示
+            const resultsDiv = document.getElementById("simulation-results");
+            resultsDiv.innerHTML = `<h3>資金の推移</h3>
+                <p>最初の20回:</p><pre>${capitalHistory.slice(0, 20).join("\n")}</pre>
+                <p>最後の20回:</p><pre>${capitalHistory.slice(-20).join("\n")}</pre>`;
+
+            // グラフに資金の推移を表示
+            const ctx = document.createElement('canvas');
+            document.getElementById('chart').appendChild(ctx);
+            const chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: Array.from({length: capitalHistory.length}, (_, i) => i + 1),
+                    datasets: [{
+                        label: '資金の推移',
+                        data: capitalHistory,
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        fill: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: '試行回数'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: '資金（円）'
+                            },
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
