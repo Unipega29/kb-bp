@@ -38,6 +38,7 @@
             const totalSimulations = 1000;
             const capitalHistory = [];
             let currentCapital = initialFunds;
+            let zeroBetCount = 0; // 賭け金が0になった回数
 
             const odds = [4.0, 4.5, 5.0, 6.0, 6.5, 7.0, 7.5, 8.0, 9.0]; // 賭けるオッズ
             const betPercentages = [29.34, 21.03, 14.35, 11.83, 8.33, 5.63, 4.59, 3.31, 1.59]; // 賭けの割合
@@ -62,29 +63,57 @@
                 return betAmounts;
             }
 
+            function getPayoutProbability(odd) {
+                // オッズが低いほど確率が高い（オッズが1以下なら30%に設定）
+                if (odd <= 4.0) return 0.30; // 最低オッズは4.0、確率30%
+                return Math.max(0.01, (1 / odd) * 0.3); // オッズが大きくなると確率が下がる
+            }
+
             // シミュレーションを実行
             for (let i = 0; i < totalSimulations; i++) {
                 const betAmounts = calculateBetting();
-                const outcome = betAmounts.map((bet, index) => {
-                    const result = Math.random() < 0.1 ? 0 : bet * odds[index]; // 10%の確率で失敗
-                    return result;
-                });
+                let outcome = 0;
+                let selectedIndex = -1;
 
-                const finalCapital = currentCapital + outcome.reduce((acc, amount) => acc + amount, 0);
-                capitalHistory.push(finalCapital);
-                currentCapital = finalCapital; // 資金を更新
+                // 賭け金が0になったかチェック
+                if (betAmounts.some(bet => bet === 0)) {
+                    zeroBetCount++;
+                    break; // もし賭け金が0になった場合はその回をスキップ
+                }
+
+                // 払戻しを受ける確率に基づいて結果を決定
+                for (let j = 0; j < betAmounts.length; j++) {
+                    const bet = betAmounts[j];
+                    const odd = odds[j];
+                    const probability = getPayoutProbability(odd);
+
+                    // 確率で払い戻しがあるか判断
+                    if (Math.random() < probability) {
+                        outcome = bet * odd; // 払い戻し額を計算
+                        selectedIndex = j;
+                        break; // 1つのオッズでのみ払い戻しがある
+                    }
+                }
+
+                // 払戻しがある場合、資金を更新
+                if (outcome > 0) {
+                    currentCapital += outcome;
+                }
+
+                capitalHistory.push(currentCapital); // 資金の記録
             }
 
             // 結果を表示
-            displayResults(capitalHistory);
+            displayResults(capitalHistory, zeroBetCount);
         }
 
-        function displayResults(capitalHistory) {
+        function displayResults(capitalHistory, zeroBetCount) {
             // 最初と最後の20回の資金の動きを表示
             const resultsDiv = document.getElementById("simulation-results");
             resultsDiv.innerHTML = `<h3>資金の推移</h3>
                 <p>最初の20回:</p><pre>${capitalHistory.slice(0, 20).join("\n")}</pre>
-                <p>最後の20回:</p><pre>${capitalHistory.slice(-20).join("\n")}</pre>`;
+                <p>最後の20回:</p><pre>${capitalHistory.slice(-20).join("\n")}</pre>
+                <p>賭け金が0になった回数: ${zeroBetCount}</p>`;
 
             // グラフに資金の推移を表示
             const ctx = document.createElement('canvas');
