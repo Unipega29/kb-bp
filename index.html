@@ -17,16 +17,19 @@
             border-collapse: collapse;
             margin-top: 20px;
         }
+        colgroup col:nth-child(2) {
+            width: 60%; /* Увел. 列の幅を全体に対して 60% */
+        }
         th, td {
             text-align: center;
             padding: 8px;
-            border: 1px solid white; /* セル間の枠線を白に変更 */
+            border: 1px solid white;
         }
         th {
             background-color: mediumaquamarine;
         }
         td {
-            background-color: #bfefdf; /* 背景色を変更 */
+            background-color: #bfefdf;
         }
         .number-col {
             background-color: mediumaquamarine;
@@ -44,13 +47,19 @@
     <label for="totalAmount">Общие средства:</label>
     <input type="number" id="totalAmount" required>
     <button onclick="calculateBetting()">Рассчитать</button>
-    <button onclick="clearTable()">Очистить</button> <!-- ボタンテキストを変更 -->
+    <button onclick="clearTable()">Очистить</button>
 
     <table>
+        <colgroup>
+            <col> <!-- Номер -->
+            <col> <!-- Увел. -->
+            <col> <!-- Колья -->
+            <col> <!-- Возврат -->
+        </colgroup>
         <thead>
             <tr>
                 <th>Номер</th>
-                <th>Увел.</th> <!-- 見出しを変更 -->
+                <th>Увел.</th>
                 <th>Колья</th>
                 <th>Возврат</th>
             </tr>
