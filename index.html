@@ -63,4 +63,44 @@
         }
 
         function calculateBetting() {
-            const totalAmount = parseFloat(document.get
+            const totalAmount = parseFloat(document.getElementById("totalAmount").value);
+
+            if (isNaN(totalAmount)) {
+                alert("総資金を入力してください。");
+                return;
+            }
+
+            let oddsList = [];
+            for (let i = 1; i <= maxHorses; i++) {
+                const oddsValue = parseFloat(document.getElementById(`odds${i}`).value);
+                if (!isNaN(oddsValue) && oddsValue > 0) {
+                    oddsList.push({ horse: i, odds: oddsValue });
+                }
+            }
+
+            // 入力された馬がいない場合
+            if (oddsList.length === 0) {
+                alert("最低1頭の馬のオッズを入力してください。");
+                return;
+            }
+
+            let totalOddsSum = oddsList.reduce((sum, entry) => sum + (1 / entry.odds), 0);
+
+            oddsList.forEach(entry => {
+                const betAmount = Math.max(100, Math.floor((totalAmount / totalOddsSum) * (1 / entry.odds) / 100) * 100); // 100円単位
+                const payoutAmount = betAmount * entry.odds;
+
+                const resultSpan = document.getElementById(`result${entry.horse}`);
+                resultSpan.textContent = `賭け金額: ${betAmount}円 / 払戻し金額: ${payoutAmount.toFixed(2)}円`;
+            });
+
+            // 入力がない馬の賭け金額と払戻し金額をリセット
+            for (let i = 1; i <= maxHorses; i++) {
+                if (!oddsList.some(entry => entry.horse === i)) {
+                    document.getElementById(`result${i}`).textContent = "賭け金額: - 円 / 払戻し金額: - 円";
+                }
+            }
+        }
+    </script>
+</body>
+</html>
