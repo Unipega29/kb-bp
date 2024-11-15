@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>競馬資金配分ツール</title>
+</head>
+<body>
+    <h1>競馬資金配分ツール</h1>
+    <p>2つの馬のオッズと総資金を入力して、最適な配分を計算します。</p>
+    <label for="odds1">馬1のオッズ:</label>
+    <input type="number" id="odds1" step="0.1" required><br>
+
+    <label for="odds2">馬2のオッズ:</label>
+    <input type="number" id="odds2" step="0.1" required><br>
+
+    <label for="totalAmount">総資金:</label>
+    <input type="number" id="totalAmount" required><br>
+
+    <button onclick="calculateBetting()">計算</button>
+
+    <h2>結果</h2>
+    <p id="result"></p>
+
+    <script>
+        function calculateBetting() {
+            const odds1 = parseFloat(document.getElementById("odds1").value);
+            const odds2 = parseFloat(document.getElementById("odds2").value);
+            const totalAmount = parseFloat(document.getElementById("totalAmount").value);
+
+            if (isNaN(odds1) || isNaN(odds2) || isNaN(totalAmount)) {
+                document.getElementById("result").textContent = "すべてのフィールドに値を入力してください。";
+                return;
+            }
+
+            const bet1 = (totalAmount * odds2) / (odds1 + odds2);
+            const bet2 = totalAmount - bet1;
+
+            document.getElementById("result").innerHTML = `馬1に賭ける金額: ${bet1.toFixed(2)}円<br>馬2に賭ける金額: ${bet2.toFixed(2)}円`;
+        }
+    </script>
+</body>
+</html>
