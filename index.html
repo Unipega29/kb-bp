@@ -68,7 +68,7 @@
             <tr>
                 <th>Номер</th>
                 <th>Увел.</th>
-                <th>Колья</th>
+                <th>Ставки</th>
                 <th>Возврат</th>
             </tr>
         </thead>
@@ -80,7 +80,7 @@
     <button class="clear-btn" onclick="clearTable()">Очистить</button>
 
     <div class="total-bet">
-        <p>合計賭け金: <span id="totalBetAmount">0</span>円</p>
+        <p>Общие ставки: <span id="totalBetAmount">0</span>円</p>
     </div>
 
     <script>
@@ -101,7 +101,7 @@
             oddsInput.type = 'number';
             oddsInput.step = '0.1';
             oddsInput.id = `odds${i}`;
-            oddsInput.onblur = () => validateOdds(oddsInput);
+            oddsInput.onblur = () => validateOdds(oddsInput, row);
             oddsCell.appendChild(oddsInput);
 
             const betCell = document.createElement('td');
@@ -119,11 +119,18 @@
             tableBody.appendChild(row);
         }
 
-        function validateOdds(input) {
+        function validateOdds(input, row) {
             const oddsValue = parseFloat(input.value);
             if (!isNaN(oddsValue) && oddsValue < 4) {
-                alert("Введите минимум 4 !!!");
+                alert("オッズは4以上でなければなりません。");
                 input.value = '';
+                // 行を削除して詰める
+                tableBody.removeChild(row);
+                // 行を上に詰める
+                const rows = Array.from(tableBody.rows);
+                rows.forEach((row, index) => {
+                    row.cells[0].textContent = index + 1; // 行番号を更新
+                });
             }
         }
 
