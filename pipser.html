@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pips and Profit Calculator</title>
+    <title>Comprehensive Pips Calculator</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -21,9 +21,10 @@
     </style>
 </head>
 <body>
-    <h1>Pips and Profit Calculator</h1>
+    <h1>Comprehensive Pips Calculator</h1>
+    
     <label for="currency">Select Currency Pair:</label>
-    <select id="currency">
+    <select id="currency" onchange="updateExchangeRate()">
         <option value="BTCUSD">BTCUSD</option>
         <option value="USDJPY">USDJPY</option>
         <option value="EURUSD">EURUSD</option>
@@ -31,6 +32,13 @@
         <option value="GBPUSD">GBPUSD</option>
         <option value="XAUUSD">XAUUSD</option>
     </select>
+
+    <h3>Convert Between Points and Pips</h3>
+    <label for="mt4Points">Enter MT4 Points:</label>
+    <input type="number" id="mt4Points" step="any" oninput="convertToPips()">
+    <label for="pips">Enter Pips:</label>
+    <input type="number" id="pips" step="any" oninput="convertToPoints()">
+    <div id="conversionResult" class="result"></div>
 
     <h3>Calculate Pips Difference</h3>
     <label for="rate1">Enter Rate 1:</label>
@@ -43,21 +51,21 @@
     <h3>Calculate New Rates with Pips</h3>
     <label for="rateBase">Enter Base Rate:</label>
     <input type="number" id="rateBase" step="any">
-    <label for="pips">Enter Pips:</label>
-    <input type="number" id="pips" step="any">
+    <label for="pipsDelta">Enter Pips:</label>
+    <input type="number" id="pipsDelta" step="any">
     <button onclick="calculateNewRates()">Calculate New Rates</button>
     <div id="newRatesResult" class="result"></div>
 
-    <h3>Calculate Profit</h3>
+    <h3>Calculate Profit or Loss</h3>
     <label for="lot">Enter Lot Size:</label>
     <input type="number" id="lot" step="any">
-    <label for="usdToJpy">Enter USD/JPY Rate:</label>
-    <input type="number" id="usdToJpy" step="any" placeholder="e.g., 150.00">
+    <label for="exchangeRate">Enter USD/JPY Rate:</label>
+    <input type="number" id="exchangeRate" step="any">
     <button onclick="calculateProfit()">Calculate Profit</button>
     <div id="profitResult" class="result"></div>
 
     <script>
-        // Pips conversion factors
+        // Conversion factors for Pips
         const pipsConversion = {
             "BTCUSD": 1,
             "USDJPY": 0.01,
@@ -67,27 +75,43 @@
             "XAUUSD": 0.01
         };
 
-        // Decimal places based on currency
-        const decimalPlaces = {
-            "BTCUSD": 2,
-            "USDJPY": 2,
-            "EURUSD": 5,
-            "GBPJPY": 2,
-            "GBPUSD": 5,
-            "XAUUSD": 3
-        };
+        // Convert Points to Pips
+        function convertToPips() {
+            const currency = document.getElementById("currency").value;
+            const mt4Points = parseFloat(document.getElementById("mt4Points").value);
 
-        // Lot size values for different pairs (1 lot = value of 1 pip in USD)
-        const lotValues = {
-            "BTCUSD": 1,        // 1 pip = 1 USD
-            "USDJPY": 1000,     // 1 pip = 1000 JPY
-            "EURUSD": 10,       // 1 pip = 10 USD
-            "GBPJPY": 1000,     // 1 pip = 1000 JPY
-            "GBPUSD": 10,       // 1 pip = 10 USD
-            "XAUUSD": 1         // 1 pip = 1 USD
-        };
+            if (isNaN(mt4Points)) {
+                document.getElementById("conversionResult").innerText = '';
+                return;
+            }
 
-        // Calculate pips difference
+            const conversionFactor = pipsConversion[currency];
+            const pips = mt4Points * conversionFactor * 10;
+
+            document.getElementById("pips").value = pips.toFixed(2);
+            document.getElementById("conversionResult").innerText = 
+                `Converted ${mt4Points} Points to ${pips.toFixed(2)} Pips.`;
+        }
+
+        // Convert Pips to Points
+        function convertToPoints() {
+            const currency = document.getElementById("currency").value;
+            const pips = parseFloat(document.getElementById("pips").value);
+
+            if (isNaN(pips)) {
+                document.getElementById("conversionResult").innerText = '';
+                return;
+            }
+
+            const conversionFactor = pipsConversion[currency];
+            const points = pips / (conversionFactor * 10);
+
+            document.getElementById("mt4Points").value = points.toFixed(2);
+            document.getElementById("conversionResult").innerText = 
+                `Converted ${pips} Pips to ${points.toFixed(2)} Points.`;
+        }
+
+        // Calculate Pips Difference
         function calculateDifference() {
             const currency = document.getElementById("currency").value;
             const rate1 = parseFloat(document.getElementById("rate1").value);
@@ -105,49 +129,43 @@
                 `The difference is ${pipsDifference.toFixed(2)} pips.`;
         }
 
-        // Calculate new rates based on pips
+        // Calculate New Rates with Pips
         function calculateNewRates() {
             const currency = document.getElementById("currency").value;
-            const baseRate = parseFloat(document.getElementById("rateBase").value);
-            const pips = parseFloat(document.getElementById("pips").value);
+            const rateBase = parseFloat(document.getElementById("rateBase").value);
+            const pipsDelta = parseFloat(document.getElementById("pipsDelta").value);
 
-            if (isNaN(baseRate) || isNaN(pips)) {
+            if (isNaN(rateBase) || isNaN(pipsDelta)) {
                 alert("Please enter valid values!");
                 return;
             }
 
             const conversionFactor = pipsConversion[currency];
-            const ratePlus = baseRate + (pips * conversionFactor);
-            const rateMinus = baseRate - (pips * conversionFactor);
+            const ratePlus = rateBase + (pipsDelta * conversionFactor);
+            const rateMinus = rateBase - (pipsDelta * conversionFactor);
 
-            const places = decimalPlaces[currency];
-
-            document.getElementById("newRatesResult").innerHTML = 
-                `Rate + ${pips} pips: ${ratePlus.toFixed(places)}<br>Rate - ${pips} pips: ${rateMinus.toFixed(places)}`;
+            document.getElementById("newRatesResult").innerText = 
+                `Rate + ${pipsDelta} pips: ${ratePlus.toFixed(5)}\nRate - ${pipsDelta} pips: ${rateMinus.toFixed(5)}`;
         }
 
-        // Calculate profit based on lot size, pips, and USD/JPY conversion
+        // Calculate Profit or Loss
         function calculateProfit() {
             const currency = document.getElementById("currency").value;
             const lot = parseFloat(document.getElementById("lot").value);
-            const pips = parseFloat(document.getElementById("pips").value);
-            const usdToJpy = parseFloat(document.getElementById("usdToJpy").value);
+            const pipsDelta = parseFloat(document.getElementById("pipsDelta").value);
+            const exchangeRate = parseFloat(document.getElementById("exchangeRate").value);
 
-            if (isNaN(lot) || isNaN(pips) || isNaN(usdToJpy)) {
+            if (isNaN(lot) || isNaN(pipsDelta) || isNaN(exchangeRate)) {
                 alert("Please enter valid values!");
                 return;
             }
 
-            const lotValue = lotValues[currency];
-            let profitInUsd = lot * pips * lotValue;
-
-            // Convert profit to JPY if not already in JPY
-            if (currency !== "USDJPY" && currency !== "GBPJPY") {
-                profitInUsd *= usdToJpy;
-            }
+            const pipValueUSD = 10; // Assume 1 pip = $10 for major pairs
+            const profitUSD = lot * pipsDelta * pipValueUSD;
+            const profitJPY = profitUSD * exchangeRate;
 
             document.getElementById("profitResult").innerText = 
-                `The profit/loss is: ${profitInUsd.toFixed(2)} JPY.`;
+                `Profit/Loss: ${profitJPY.toFixed(2)} JPY`;
         }
     </script>
 </body>
