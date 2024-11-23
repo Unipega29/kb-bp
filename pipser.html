@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pips Calculator</title>
+    <title>Pips and Profit Calculator</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -16,11 +16,12 @@
         .result {
             margin-top: 20px;
             font-weight: bold;
+            color: #3cb371;
         }
     </style>
 </head>
 <body>
-    <h1>Pips Calculator</h1>
+    <h1>Pips and Profit Calculator</h1>
     <label for="currency">Select Currency Pair:</label>
     <select id="currency">
         <option value="BTCUSD">BTCUSD</option>
@@ -47,6 +48,14 @@
     <button onclick="calculateNewRates()">Calculate New Rates</button>
     <div id="newRatesResult" class="result"></div>
 
+    <h3>Calculate Profit</h3>
+    <label for="lot">Enter Lot Size:</label>
+    <input type="number" id="lot" step="any">
+    <label for="usdToJpy">Enter USD/JPY Rate:</label>
+    <input type="number" id="usdToJpy" step="any" placeholder="e.g., 150.00">
+    <button onclick="calculateProfit()">Calculate Profit</button>
+    <div id="profitResult" class="result"></div>
+
     <script>
         // Pips conversion factors
         const pipsConversion = {
@@ -56,6 +65,26 @@
             "GBPJPY": 0.01,
             "GBPUSD": 0.0001,
             "XAUUSD": 0.01
+        };
+
+        // Decimal places based on currency
+        const decimalPlaces = {
+            "BTCUSD": 2,
+            "USDJPY": 2,
+            "EURUSD": 5,
+            "GBPJPY": 2,
+            "GBPUSD": 5,
+            "XAUUSD": 3
+        };
+
+        // Lot size values for different pairs (1 lot = value of 1 pip in USD)
+        const lotValues = {
+            "BTCUSD": 1,        // 1 pip = 1 USD
+            "USDJPY": 1000,     // 1 pip = 1000 JPY
+            "EURUSD": 10,       // 1 pip = 10 USD
+            "GBPJPY": 1000,     // 1 pip = 1000 JPY
+            "GBPUSD": 10,       // 1 pip = 10 USD
+            "XAUUSD": 1         // 1 pip = 1 USD
         };
 
         // Calculate pips difference
@@ -91,8 +120,34 @@
             const ratePlus = baseRate + (pips * conversionFactor);
             const rateMinus = baseRate - (pips * conversionFactor);
 
-            document.getElementById("newRatesResult").innerText = 
-                `Rate + ${pips} pips: ${ratePlus.toFixed(6)}, Rate - ${pips} pips: ${rateMinus.toFixed(6)}.`;
+            const places = decimalPlaces[currency];
+
+            document.getElementById("newRatesResult").innerHTML = 
+                `Rate + ${pips} pips: ${ratePlus.toFixed(places)}<br>Rate - ${pips} pips: ${rateMinus.toFixed(places)}`;
+        }
+
+        // Calculate profit based on lot size, pips, and USD/JPY conversion
+        function calculateProfit() {
+            const currency = document.getElementById("currency").value;
+            const lot = parseFloat(document.getElementById("lot").value);
+            const pips = parseFloat(document.getElementById("pips").value);
+            const usdToJpy = parseFloat(document.getElementById("usdToJpy").value);
+
+            if (isNaN(lot) || isNaN(pips) || isNaN(usdToJpy)) {
+                alert("Please enter valid values!");
+                return;
+            }
+
+            const lotValue = lotValues[currency];
+            let profitInUsd = lot * pips * lotValue;
+
+            // Convert profit to JPY if not already in JPY
+            if (currency !== "USDJPY" && currency !== "GBPJPY") {
+                profitInUsd *= usdToJpy;
+            }
+
+            document.getElementById("profitResult").innerText = 
+                `The profit/loss is: ${profitInUsd.toFixed(2)} JPY.`;
         }
     </script>
 </body>
