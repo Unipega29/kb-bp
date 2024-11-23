@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pips Calculator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        label, select, input, button {
+            margin: 10px 0;
+            display: block;
+        }
+        .result {
+            margin-top: 20px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>Pips Calculator</h1>
+    <label for="currency">Select Currency Pair:</label>
+    <select id="currency">
+        <option value="BTCUSD">BTCUSD</option>
+        <option value="USDJPY">USDJPY</option>
+        <option value="EURUSD">EURUSD</option>
+        <option value="GBPJPY">GBPJPY</option>
+        <option value="GBPUSD">GBPUSD</option>
+        <option value="XAUUSD">XAUUSD</option>
+    </select>
+
+    <h3>Calculate Pips Difference</h3>
+    <label for="rate1">Enter Rate 1:</label>
+    <input type="number" id="rate1" step="any">
+    <label for="rate2">Enter Rate 2:</label>
+    <input type="number" id="rate2" step="any">
+    <button onclick="calculateDifference()">Calculate Pips Difference</button>
+    <div id="differenceResult" class="result"></div>
+
+    <h3>Calculate New Rates with Pips</h3>
+    <label for="rateBase">Enter Base Rate:</label>
+    <input type="number" id="rateBase" step="any">
+    <label for="pips">Enter Pips:</label>
+    <input type="number" id="pips" step="any">
+    <button onclick="calculateNewRates()">Calculate New Rates</button>
+    <div id="newRatesResult" class="result"></div>
+
+    <script>
+        // Pips conversion factors
+        const pipsConversion = {
+            "BTCUSD": 1,
+            "USDJPY": 0.01,
+            "EURUSD": 0.0001,
+            "GBPJPY": 0.01,
+            "GBPUSD": 0.0001,
+            "XAUUSD": 0.01
+        };
+
+        // Calculate pips difference
+        function calculateDifference() {
+            const currency = document.getElementById("currency").value;
+            const rate1 = parseFloat(document.getElementById("rate1").value);
+            const rate2 = parseFloat(document.getElementById("rate2").value);
+
+            if (isNaN(rate1) || isNaN(rate2)) {
+                alert("Please enter valid rates!");
+                return;
+            }
+
+            const conversionFactor = pipsConversion[currency];
+            const pipsDifference = Math.abs(rate1 - rate2) / conversionFactor;
+
+            document.getElementById("differenceResult").innerText = 
+                `The difference is ${pipsDifference.toFixed(2)} pips.`;
+        }
+
+        // Calculate new rates based on pips
+        function calculateNewRates() {
+            const currency = document.getElementById("currency").value;
+            const baseRate = parseFloat(document.getElementById("rateBase").value);
+            const pips = parseFloat(document.getElementById("pips").value);
+
+            if (isNaN(baseRate) || isNaN(pips)) {
+                alert("Please enter valid values!");
+                return;
+            }
+
+            const conversionFactor = pipsConversion[currency];
+            const ratePlus = baseRate + (pips * conversionFactor);
+            const rateMinus = baseRate - (pips * conversionFactor);
+
+            document.getElementById("newRatesResult").innerText = 
+                `Rate + ${pips} pips: ${ratePlus.toFixed(6)}, Rate - ${pips} pips: ${rateMinus.toFixed(6)}.`;
+        }
+    </script>
+</body>
+</html>
