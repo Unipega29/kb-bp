@@ -73,12 +73,17 @@
                 <th>勝敗</th>
                 <th>損益</th>
                 <th>合計資金</th>
+                <th>増減率 (%)</th>
             </tr>
         </thead>
         <tbody></tbody>
     </table>
 
     <script>
+        function formatNumber(num) {
+            return Math.floor(num).toLocaleString();
+        }
+
         function runSimulation() {
             const payout = parseFloat(document.getElementById('payout').value);
             const winRate = parseFloat(document.getElementById('winRate').value);
@@ -96,7 +101,7 @@
                 const actualBet = Math.min(betAmount, funds); // Avoid betting more than available funds
 
                 if (funds <= 0) {
-                    resultsTable.innerHTML += `<tr><td>${i}</td><td>×</td><td>0</td><td>${funds.toFixed(2)}</td></tr>`;
+                    resultsTable.innerHTML += `<tr><td>${i}</td><td>×</td><td>0</td><td>${formatNumber(funds)}</td><td>-100</td></tr>`;
                     continue;
                 }
 
@@ -104,11 +109,14 @@
                 const profit = isWin ? actualBet * payout : 0;
                 funds = funds - actualBet + profit;
 
+                const percentageChange = ((funds - initialFunds) / initialFunds * 100).toFixed(2);
+
                 resultsTable.innerHTML += `<tr>
                     <td>${i}</td>
                     <td>${isWin ? '◯' : '×'}</td>
-                    <td>${profit.toFixed(2)}</td>
-                    <td>${funds.toFixed(2)}</td>
+                    <td>${formatNumber(profit)}</td>
+                    <td>${formatNumber(funds)}</td>
+                    <td>${percentageChange}</td>
                 </tr>`;
             }
         }
