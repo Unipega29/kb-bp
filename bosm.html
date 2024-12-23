@@ -26,6 +26,11 @@
         .controls {
             margin-bottom: 20px;
         }
+        .counter {
+            margin-top: 10px;
+            font-size: 1.2em;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
@@ -63,7 +68,10 @@
         </label><br>
 
         <button onclick="runSimulation()">シミュレーション開始</button>
+        <button onclick="resetCounter()">リセット</button>
     </div>
+
+    <div class="counter">シミュレーション実行回数: <span id="simulationCount">0</span></div>
 
     <h2>結果</h2>
     <table id="resultsTable">
@@ -80,11 +88,16 @@
     </table>
 
     <script>
+        let simulationCount = 0;
+
         function formatNumber(num) {
             return Math.floor(num).toLocaleString();
         }
 
         function runSimulation() {
+            simulationCount++;
+            document.getElementById('simulationCount').textContent = simulationCount;
+
             const payout = parseFloat(document.getElementById('payout').value);
             const winRate = parseFloat(document.getElementById('winRate').value);
             const initialFunds = parseFloat(document.getElementById('initialFunds').value);
@@ -119,6 +132,11 @@
                     <td>${percentageChange}</td>
                 </tr>`;
             }
+        }
+
+        function resetCounter() {
+            simulationCount = 0;
+            document.getElementById('simulationCount').textContent = simulationCount;
         }
     </script>
 </body>
