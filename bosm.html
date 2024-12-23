@@ -1,43 +1,117 @@
-import streamlit as st
-import random
-import pandas as pd
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ランダムシミュレーター</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            line-height: 1.6;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ccc;
+            padding: 10px;
+            text-align: center;
+        }
+        th {
+            background-color: #f4f4f4;
+        }
+        .controls {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>ランダムシミュレーター</h1>
 
-def simulate(payout, win_rate, initial_funds, is_compound, bet_percentage, num_trials=100):
-    funds = initial_funds
-    results = []
+    <div class="controls">
+        <label>
+            ペイアウト倍率:
+            <input type="number" id="payout" value="2.0" step="0.1" min="1.0">
+        </label><br>
 
-    for i in range(1, num_trials + 1):
-        bet_amount = funds * bet_percentage / 100 if is_compound else initial_funds * bet_percentage / 100
-        bet_amount = min(bet_amount, funds)  # Avoid betting more than available funds
-        
-        if funds <= 0:
-            results.append([i, "×", 0, funds])
-            continue
+        <label>
+            勝率 (0-1):
+            <input type="number" id="winRate" value="0.5" step="0.01" min="0" max="1">
+        </label><br>
 
-        outcome = "◯" if random.random() < win_rate else "×"
-        profit = bet_amount * (payout - 1) if outcome == "◯" else -bet_amount
-        funds += profit
+        <label>
+            初期資金:
+            <input type="number" id="initialFunds" value="1000" step="1" min="1">
+        </label><br>
 
-        results.append([i, outcome, round(profit, 2), round(funds, 2)])
+        <label>
+            複利運用:
+            <input type="checkbox" id="compound">
+        </label><br>
 
-    return results
+        <label>
+            ベット金額 (固定または初期資金の％):
+            <input type="number" id="betPercentage" value="10" step="1" min="1">
+        </label><br>
 
-# Streamlit app
-st.title("ランダムシミュレーター")
+        <label>
+            試行回数:
+            <input type="number" id="numTrials" value="100" step="1" min="1">
+        </label><br>
 
-# Input fields
-payout = st.number_input("ペイアウト倍率", min_value=1.0, value=2.0, step=0.1)
-win_rate = st.number_input("勝率 (0-1)", min_value=0.0, max_value=1.0, value=0.5, step=0.01)
-initial_funds = st.number_input("初期資金", min_value=1.0, value=1000.0, step=1.0)
-is_compound = st.checkbox("複利運用")
-bet_percentage = st.number_input("ベット金額 (固定 or 初期資金の％)", min_value=1.0, value=10.0, step=1.0)
-num_trials = st.number_input("試行回数", min_value=1, value=100, step=1)
+        <button onclick="runSimulation()">シミュレーション開始</button>
+    </div>
 
-if st.button("シミュレーション開始"):
-    results = simulate(payout, win_rate, initial_funds, is_compound, bet_percentage, num_trials)
-    df = pd.DataFrame(results, columns=["回数", "勝敗", "損益", "合計資金"])
+    <h2>結果</h2>
+    <table id="resultsTable">
+        <thead>
+            <tr>
+                <th>回数</th>
+                <th>勝敗</th>
+                <th>損益</th>
+                <th>合計資金</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
 
-    st.subheader("結果")
-    st.dataframe(df)
+    <script>
+        function runSimulation() {
+            const payout = parseFloat(document.getElementById('payout').value);
+            const winRate = parseFloat(document.getElementById('winRate').value);
+            const initialFunds = parseFloat(document.getElementById('initialFunds').value);
+            const isCompound = document.getElementById('compound').checked;
+            const betPercentage = parseFloat(document.getElementById('betPercentage').value);
+            const numTrials = parseInt(document.getElementById('numTrials').value);
 
-    st.line_chart(df["合計資金"].astype(float))
+            let funds = initialFunds;
+            const resultsTable = document.getElementById('resultsTable').querySelector('tbody');
+            resultsTable.innerHTML = ''; // Clear previous results
+
+            for (let i = 1; i <= numTrials; i++) {
+                const betAmount = isCompound ? funds * (betPercentage / 100) : initialFunds * (betPercentage / 100);
+                const actualBet = Math.min(betAmount, funds); // Avoid betting more than available funds
+
+                if (funds <= 0) {
+                    resultsTable.innerHTML += `<tr><td>${i}</td><td>×</td><td>0</td><td>${funds.toFixed(2)}</td></tr>`;
+                    continue;
+                }
+
+                const isWin = Math.random() < winRate;
+                const profit = isWin ? actualBet * (payout - 1) : -actualBet;
+                funds += profit;
+
+                resultsTable.innerHTML += `<tr>
+                    <td>${i}</td>
+                    <td>${isWin ? '◯' : '×'}</td>
+                    <td>${profit.toFixed(2)}</td>
+                    <td>${funds.toFixed(2)}</td>
+                </tr>`;
+            }
+        }
+    </script>
+</body>
+</html>
